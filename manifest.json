@@ -1,0 +1,44 @@
+{
+	"name": "widget.io",
+	"version": "1.1",
+	"description": "A simple Streamelements addon to automate and simplify widget import and export.",
+	"manifest_version": 3,
+	"author": "Sigma",
+	"permissions": [
+	],
+	"icons": {
+		"16": "icons/icon16.png",
+		"32": "icons/icon32.png",
+		"48": "icons/icon48.png",
+		"128": "icons/icon128.png"
+	  },
+	"action": {
+		"default_popup": "popup.html",
+		"default_title": "widget.io"
+	},
+	"content_scripts": [
+		{
+			"matches": [
+				"https://*.streamelements.com/overlay/*"
+			],
+			"js": [
+				"js/jquery-3.6.3.min.js",
+				"js/jszip.min.js",
+				"js/FileSaver.js",
+				"script.js"
+			]
+		}
+	],
+	"web_accessible_resources": [
+		{
+			"resources": [
+				"js/jszip.min.js",
+				"js/FileSaver.js",
+				"handleCode.js"
+			],
+			"matches": [
+				"https://streamelements.com/*"
+			]
+		}
+	]
+}
