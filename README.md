@@ -8,5 +8,5 @@ Supported in the following browsers:
 - Opera GX
 
 # Installation
-Download from ![Chrome Web Store](https://chrome.google.com/webstore/detail/widgetio/fcgbjpajcfjnjgfdeookpnoefgcliljj?hl=en&authuser=3)
+Download from [Chrome Web Store](https://chrome.google.com/webstore/detail/widgetio/fcgbjpajcfjnjgfdeookpnoefgcliljj?hl=en&authuser=3)
 
