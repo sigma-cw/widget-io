@@ -205,11 +205,12 @@ function readFiles(zip, pathArray) {
         });
 }
 
-function handleCode(path) {
+/* function handleCode(path) {
     $('widget-creator > button').click();
     tab = $('.widget-creator__items').children()[4];
     tab_content = $(tab).children()[4];
-    widget_button = $(tab_content).children()[5];
+    widget_button = $(tab_content).children()[$(tab_content).children().length - 1];
+
     $(widget_button).click();
 
     $('.custom-event-list-editor-button-container > button').click();
@@ -338,6 +339,171 @@ function writeCode() {
 
 
 }
+ */
+
+function handleCode(path) {
+    $('widget-creator > button').click();
+    tab = $('.widget-creator__items').children()[4];
+    tab_content = $(tab).children()[4];
+    widget_button = $(tab_content).children()[$(tab_content).children().length - 1];
+
+    $(widget_button).click();
+
+    $('.custom-event-list-editor-button-container > button').click();
+
+    waitForElm('.html-editor.code-editor .monaco-editor').then(() => {
+        const modelNumber = getDataUri('.html-editor.code-editor', 0)
+        const model = monaco.editor.getModels();
+
+        if (path[0]) {
+            model[modelNumber - 1].setValue(path[0]);
+        } else {
+            model[modelNumber - 1].setValue('');
+        }
+        const fields = $('._md-nav-bar-list').children();
+        $($(fields[1]).children()[0]).click();
+    });
+
+    waitForElm('.css-editor.code-editor .monaco-editor').then(() => {
+        const model = monaco.editor.getModels();
+        const modelNumber = getDataUri('.css-editor.code-editor', 1)
+        if (path[1]) {
+            model[modelNumber - 1].setValue(path[1]);
+        } else {
+            model[modelNumber - 1].setValue('');
+        }
+        const fields = $('._md-nav-bar-list').children();
+        $($(fields[2]).children()[0]).click();
+    });
+
+    waitForElm('.js-editor.code-editor .monaco-editor').then(() => {
+        const model = monaco.editor.getModels();
+        const modelNumber = getDataUri('.js-editor.code-editor', 2)
+        if (path[2]) {
+            model[modelNumber - 1].setValue(path[2]);
+        } else {
+            model[modelNumber - 1].setValue('');
+        }
+        const fields = $('._md-nav-bar-list').children();
+        $($(fields[3]).children()[0]).click();
+    });
+
+    waitForElm('.fields-editor.code-editor .monaco-editor').then(() => {
+        const model = monaco.editor.getModels();
+        const modelNumber = getDataUri('.fields-editor.code-editor', 3)
+        if (path[3]) {
+            model[modelNumber - 1].setValue(path[3]);
+        } else {
+            model[modelNumber - 1].setValue('');
+        }
+        const fields = $('._md-nav-bar-list').children();
+        $($(fields[4]).children()[0]).click();
+    });
+
+    waitForElm('.field-data-editor.code-editor .monaco-editor').then(() => {
+        const model = monaco.editor.getModels();
+        const modelNumber = getDataUri('.field-data-editor.code-editor', 4)
+        if (path[4]) {
+            model[modelNumber - 1].setValue(path[4]);
+        } else {
+            model[modelNumber - 1].setValue('');
+        }
+        $('.exit-code-editor').click()
+    });
+}
+function getDataUri(classes, index) {
+    const parentElement = document.querySelector(classes);
+    if (parentElement) {
+        const targetElement = parentElement.querySelector(`${classes} .monaco-editor`);
+
+        if (targetElement) {
+            const dataUri = targetElement.getAttribute('data-uri');
+            const parts = dataUri.split("model/");
+            return parts.length > 1 ? parts[1] : null;
+        }
+        else {
+            const fields = $('._md-nav-bar-list').children();
+            $($(fields[index]).children()[0]).click();
+            const targetElement = parentElement.querySelector(`${classes} .monaco-editor`);
+
+            if (targetElement) {
+                const dataUri = targetElement.getAttribute('data-uri');
+                const parts = dataUri.split("model/");
+                return parts.length > 1 ? parts[1] : null;
+            }
+        }
+    } else {
+        console.log(`Element ${classes} not found`)
+    }
+    return null;
+}
+
+function writeCode() {
+    var zip = new JSZip()
+    zip.file('widget.ini', ini)
+    codeArray = [];
+
+    var value = $('#widgets')[0].value
+    var widgetList = $('span[ng-show="!vm.editableWidgetNames[widget.id]"]')
+    widgetList.each((el) => {
+        if (widgetList[el].innerText === value) {
+            $($(widgetList[el]).parent()[0]).click()
+        }
+    })
+
+    $('.custom-event-list-editor-button-container > button').click();
+
+    waitForElm('.html-editor.code-editor .monaco-editor').then(() => {
+        const modelNumber = getDataUri('.html-editor.code-editor', 0)
+        const model = monaco.editor.getModels();
+
+        zip.file('html.txt', model[modelNumber - 1].getValue());
+
+        const fields = $('._md-nav-bar-list').children();
+        $($(fields[1]).children()[0]).click();
+    });
+
+    waitForElm('.css-editor.code-editor .monaco-editor').then(() => {
+        const model = monaco.editor.getModels();
+        const modelNumber = getDataUri('.css-editor.code-editor', 1)
+
+        zip.file('css.txt', model[modelNumber - 1].getValue());
+
+        const fields = $('._md-nav-bar-list').children();
+        $($(fields[2]).children()[0]).click();
+    });
+
+    waitForElm('.js-editor.code-editor .monaco-editor').then(() => {
+        const model = monaco.editor.getModels();
+        const modelNumber = getDataUri('.js-editor.code-editor', 2);
+        zip.file('js.txt', model[modelNumber - 1].getValue());
+
+        const fields = $('._md-nav-bar-list').children();
+        $($(fields[3]).children()[0]).click();
+    });
+
+    waitForElm('.fields-editor.code-editor .monaco-editor').then(() => {
+        const model = monaco.editor.getModels();
+        const modelNumber = getDataUri('.fields-editor.code-editor', 3);
+
+        zip.file('fields.txt', model[modelNumber - 1].getValue());
+
+        const fields = $('._md-nav-bar-list').children();
+        $($(fields[4]).children()[0]).click();
+    });
+
+    waitForElm('.field-data-editor.code-editor .monaco-editor').then(() => {
+        const model = monaco.editor.getModels();
+        const modelNumber = getDataUri('.field-data-editor.code-editor', 4);
+
+        zip.file('data.txt', model[modelNumber - 1].getValue());
+        zip.generateAsync({ type: "blob" }).then(function (blob) {
+            saveAs(blob, `${value}.zip`);
+        });
+        console.log("zip", "downloaded");
+        $('.exit-code-editor').click();
+    });
+}
 
 function resetSession() {
     $('#zip').val('')
@@ -390,6 +556,7 @@ waitForElm('#sigma-save').then(() => {
 ////////////////////////////////////////////////////////////////////////////////
 
 window.addEventListener("message", function (event) {
+
     if (event.data[1] === 'zip') {
         codePath = event.data[0];
     }
@@ -408,6 +575,7 @@ window.addEventListener("message", function (event) {
     else if (event.data[1] === 'data') {
         codePath[4] = event.data[0];
     }
+
 });
 
 ////////////////////////////////////////////////////////////////////////////////

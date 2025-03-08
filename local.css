@@ -1,0 +1,21 @@
+:root {
+  --font-name: 'Nunito';
+  --font-size: 16px;
+  --chat-direction: Column;
+  --message-width: 100%;
+  --msg-gap: 10px;
+  --emote-size: 24px;
+  --emote-only-size: 48px;
+  --badge-size: 16px;
+  --badge-gap: 5px;
+  --animate-duration: 1000ms !important;
+}
+
+body {
+  background: #dfdfdf;
+}
+
+.main-container {
+  padding: 0.625rem;
+  background: #fff;
+}

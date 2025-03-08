@@ -1,0 +1,68 @@
+:root{
+    font-size: 16px;
+}
+
+body{
+    font-family: proxima-nova, Roboto, sans-serif;
+    padding: 0.625rem;
+}
+
+p {
+    margin: 0;
+}
+
+/* popup */
+.main-container{
+    height: 500px;
+    overflow-y: scroll;
+}
+
+a {
+    color: #ED1B53;
+    font-weight: 600;
+}
+
+a:visited {
+    color: #ED1B53;
+}
+
+h2{
+    font-weight: 800;
+    color: #333247;
+    margin-bottom: 0;
+}
+
+.tutorial{
+    counter-reset: section;
+}
+
+h4{
+    margin: 0.625rem 0 0 0;
+}
+
+h4::before {
+    counter-increment: section;
+    content: counter(section) ". ";
+}
+
+h4:nth-of-type(1){
+    margin-top: 0;
+}
+
+h5{
+    margin: 0;
+    color: #464561;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #ED1B53;
+    margin-bottom: 0.625rem;
+}
+
+.dev {
+    font-size: 0.875rem;
+    color: #606060;
+    margin-top: 0.3125rem;
+}
