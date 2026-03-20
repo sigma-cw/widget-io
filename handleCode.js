@@ -352,62 +352,38 @@ function handleCode(path) {
     $('.custom-event-list-editor-button-container > button').click();
 
     waitForElm('.html-editor.code-editor .monaco-editor').then(() => {
-        const modelNumber = getDataUri('.html-editor.code-editor', 0)
-        const model = monaco.editor.getModels();
+        const model = monaco.editor.getModels().slice(-1)[0];
+        model.setValue(path[0] || '');
 
-        if (path[0]) {
-            model[modelNumber - 1].setValue(path[0]);
-        } else {
-            model[modelNumber - 1].setValue('');
-        }
         const fields = $('._md-nav-bar-list').children();
         $($(fields[1]).children()[0]).click();
     });
 
     waitForElm('.css-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels();
-        const modelNumber = getDataUri('.css-editor.code-editor', 1)
-        if (path[1]) {
-            model[modelNumber - 1].setValue(path[1]);
-        } else {
-            model[modelNumber - 1].setValue('');
-        }
+        const model = monaco.editor.getModels().slice(-1)[0];
+        model.setValue(path[1] || '');
+
         const fields = $('._md-nav-bar-list').children();
         $($(fields[2]).children()[0]).click();
     });
 
     waitForElm('.js-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels();
-        const modelNumber = getDataUri('.js-editor.code-editor', 2)
-        if (path[2]) {
-            model[modelNumber - 1].setValue(path[2]);
-        } else {
-            model[modelNumber - 1].setValue('');
-        }
+        const model = monaco.editor.getModels().slice(-1)[0];
+        model.setValue(path[2] || '');
         const fields = $('._md-nav-bar-list').children();
         $($(fields[3]).children()[0]).click();
     });
 
     waitForElm('.fields-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels();
-        const modelNumber = getDataUri('.fields-editor.code-editor', 3)
-        if (path[3]) {
-            model[modelNumber - 1].setValue(path[3]);
-        } else {
-            model[modelNumber - 1].setValue('');
-        }
+        const model = monaco.editor.getModels().slice(-1)[0];
+        model.setValue(path[3] || '');
         const fields = $('._md-nav-bar-list').children();
         $($(fields[4]).children()[0]).click();
     });
 
     waitForElm('.field-data-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels();
-        const modelNumber = getDataUri('.field-data-editor.code-editor', 4)
-        if (path[4]) {
-            model[modelNumber - 1].setValue(path[4]);
-        } else {
-            model[modelNumber - 1].setValue('');
-        }
+        const model = monaco.editor.getModels().slice(-1)[0];
+        model.setValue(path[4] || '');
         $('.exit-code-editor').click()
     });
 }
@@ -454,49 +430,41 @@ function writeCode() {
     $('.custom-event-list-editor-button-container > button').click();
 
     waitForElm('.html-editor.code-editor .monaco-editor').then(() => {
-        const modelNumber = getDataUri('.html-editor.code-editor', 0)
-        const model = monaco.editor.getModels();
-
-        zip.file('html.txt', model[modelNumber - 1].getValue());
+        const model = monaco.editor.getModels().slice(-1)[0];
+        zip.file('html.txt', model.getValue());
 
         const fields = $('._md-nav-bar-list').children();
         $($(fields[1]).children()[0]).click();
     });
 
     waitForElm('.css-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels();
-        const modelNumber = getDataUri('.css-editor.code-editor', 1)
-
-        zip.file('css.txt', model[modelNumber - 1].getValue());
+        const model = monaco.editor.getModels().slice(-1)[0];
+        zip.file('css.txt', model.getValue());
 
         const fields = $('._md-nav-bar-list').children();
         $($(fields[2]).children()[0]).click();
     });
 
     waitForElm('.js-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels();
-        const modelNumber = getDataUri('.js-editor.code-editor', 2);
-        zip.file('js.txt', model[modelNumber - 1].getValue());
+        const model = monaco.editor.getModels().slice(-1)[0];
+        zip.file('js.txt', model.getValue());
 
         const fields = $('._md-nav-bar-list').children();
         $($(fields[3]).children()[0]).click();
     });
 
     waitForElm('.fields-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels();
-        const modelNumber = getDataUri('.fields-editor.code-editor', 3);
-
-        zip.file('fields.txt', model[modelNumber - 1].getValue());
+        const model = monaco.editor.getModels().slice(-1)[0];
+        zip.file('fields.txt', model.getValue());
 
         const fields = $('._md-nav-bar-list').children();
         $($(fields[4]).children()[0]).click();
     });
 
     waitForElm('.field-data-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels();
-        const modelNumber = getDataUri('.field-data-editor.code-editor', 4);
+        const model = monaco.editor.getModels().slice(-1)[0];
+        zip.file('data.txt', model.getValue());
 
-        zip.file('data.txt', model[modelNumber - 1].getValue());
         zip.generateAsync({ type: "blob" }).then(function (blob) {
             saveAs(blob, `${value}.zip`);
         });
