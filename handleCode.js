@@ -457,7 +457,7 @@ window.addEventListener("message", function (event) {
 const dialog = `
 <div class="sigma-extension-dialog">
     <div class="md-dialog-container sigma-dialog-container" tabindex="-1" md-theme="default"
-        style="top: 0px; height: 961px;">
+        style="top: 0px; height: 1012px;">
         <div class="md-dialog-focus-trap" tabindex="0"></div>
         <md-dialog class="sigma-dialog overlay-editor__session-data-dialog__root _md md-default-theme md-transition-in"
             md-theme="default" role="dialog" tabindex="-1" aria-describedby="dialogContent_111" style="">
@@ -466,10 +466,11 @@ const dialog = `
                 <p>
                     Unfortunately, the ZIP you uploaded is not supported by this
                     extension. Do not fret, however! You can manually provide
-                    the required files. Open the ZIP and locate files with names
-                    that either contain or otherwise resemble <a>"html.txt"</a>, <a>"css.txt"</a>,
-                    <a>"js.txt"</a>, and <a>"fields.txt"</a>. Refer to the instructions that
-                    came with your widget to find these files or their equivalents.
+                    the required files. Open the file you just uploaded using 7-Zip or a similar program,
+					and drag out its contents to a folder on your computer.
+					What you extracted should contain or otherwise resemble <a>"html.txt"</a>, <a>"css.txt"</a>,
+                    <a>"js.txt"</a>, <a>"fields.txt"</a>, and <a>"data.txt"</a>
+					(exact naming may vary for each widget, but the files should be named somewhat like that).
                  </p>
                  <p>
                     Then, select each file in the respective box below, and click
