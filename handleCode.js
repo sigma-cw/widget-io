@@ -537,14 +537,6 @@ waitForElm('#zip').then(() => {
     });
 });
 
-waitForElm('#sigma-create').then(() => {
-    $('#sigma-create').click(() => {
-        $('#zip').val('')
-        $('.zip-select span').text('No file selected...')
-        handleCode(codePath)
-    });
-});
-
 waitForElm('#sigma-save').then(() => {
     $('#sigma-save').click(() => {
         writeCode()
@@ -558,7 +550,10 @@ waitForElm('#sigma-save').then(() => {
 window.addEventListener("message", function (event) {
 
     if (event.data[1] === 'zip') {
-        codePath = event.data[0];
+		codePath = event.data[0];
+		$('#zip').val('')
+		$('.zip-select span').text('No file selected...')
+		handleCode(codePath)
     }
     else if (event.data[1] === 'html') {
         codePath[0] = event.data[0];

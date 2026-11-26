@@ -146,7 +146,7 @@ var style = $(`
         }
 
         .sigma-extension-menu .extension-users {
-            height: 238px;
+            height: 186px;
             transition: height 0.5s ease;
         }
 
@@ -280,7 +280,7 @@ var menu = $(`
             <p class="box-title">FOR USERS</p>
             <p class="desc">
                 Automatic custom widget set up. Select the supported
-                widget zip file, and press the magic button.
+                widget zip file, and watch the magic happen.
             </p>
             <div class="selection">
                 <p>Select widget ZIP file</p>
@@ -294,7 +294,6 @@ var menu = $(`
                     id="zip" name="zip"
                     accept=".7z,.zip,.rar">
             </div>
-            <ext-button id="sigma-create">CREATE WIDGET</ext-button>
         </div>
         <div class="extension-box extension-devs hidden">
             <p class="box-title">FOR DEVELOPERS</p>
