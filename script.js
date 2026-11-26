@@ -34,13 +34,19 @@ function waitForElm(selector) {
 
 function handleWidgetList() {
     $('#widgets').html('')
-    $('span[ng-show="!vm.editableWidgetNames[widget.id]"]').each((el) => {
-        var name = $('span[ng-show="!vm.editableWidgetNames[widget.id]"]')[el].innerText;
-        var option = $(`
-            <option value="${name}">${name}</option>
-        `)
-        $('#widgets').append(option)
-    });
+	const sidebarChildren = $('se-editor-sidebar > div').children();
+	console.log(sidebarChildren.length, sidebarChildren[0].dataset, "closed", sidebarChildren[0].dataset['closed'] === '')
+	if( sidebarChildren.length > 1 && sidebarChildren[0].dataset['closed'] === ''){
+		$('se-editor-sidebar div[data-slot="collapsible"][data-closed]:first-of-type > button').click();
+		console.log($('se-editor-sidebar div[data-slot="collapsible"][data-closed]:first-of-type'))
+	}
+	waitForElm('li[data-editor-action="Select widget"]').then(() => {
+		$('li[data-editor-action="Select widget"]').each((el) => {
+			let name = $('li[data-editor-action="Select widget"]')[el].innerText
+			var option = $(`<option value="${name}">${name}</option>`)
+			$('#widgets').append(option)
+		});
+	})
 }
 
 function appendScript(src) {
@@ -62,7 +68,7 @@ var style = $(`
         .extension-button {
             position: fixed;
             bottom: 20px;
-            left: 400px;
+            left: 310px;
         }
 
         .extension-button.md-fab {
@@ -81,7 +87,7 @@ var style = $(`
             width: 300px;
             position: fixed;
             bottom: 90px;
-            left: 400px;
+            left: 310px;
             margin: 12px 8px;
             grid-row-gap: 8px;
             display: inline-grid;
@@ -146,7 +152,7 @@ var style = $(`
         }
 
         .sigma-extension-menu .extension-users {
-            height: 238px;
+            height: 186px;
             transition: height 0.5s ease;
         }
 
@@ -213,13 +219,13 @@ var style = $(`
             background-color: #F64473;
         }
 
-        .sigma-extension-menu .hidden {
+        .sigma-extension-menu .sigma-hidden {
             height: 61px;
             cursor: pointer;
             transition: height 0.5s ease;
         }
 
-        .sigma-extension-menu .hidden .desc {
+        .sigma-extension-menu .sigma-hidden .desc {
             color: white;
             transition: color 0.5s ease;
         }
@@ -280,7 +286,7 @@ var menu = $(`
             <p class="box-title">FOR USERS</p>
             <p class="desc">
                 Automatic custom widget set up. Select the supported
-                widget zip file, and press the magic button.
+                widget zip file, and watch the magic happen.
             </p>
             <div class="selection">
                 <p>Select widget ZIP file</p>
@@ -294,9 +300,8 @@ var menu = $(`
                     id="zip" name="zip"
                     accept=".7z,.zip,.rar">
             </div>
-            <ext-button id="sigma-create">CREATE WIDGET</ext-button>
         </div>
-        <div class="extension-box extension-devs hidden">
+        <div class="extension-box extension-devs sigma-hidden">
             <p class="box-title">FOR DEVELOPERS</p>
             <p class="desc">
                 Download any custom widget as a zip archive, no need for
@@ -338,16 +343,16 @@ waitForElm('#editor-wrapper')
         })
 
         $('.extension-devs').click(() =>{
-            $('.extension-devs').removeClass('hidden')
-            $('.extension-users').addClass('hidden')
+            $('.extension-devs').removeClass('sigma-hidden')
+            $('.extension-users').addClass('sigma-hidden')
         });
 
         $('.extension-users').click(() =>{
-            $('.extension-users').removeClass('hidden')
-            $('.extension-devs').addClass('hidden')
+            $('.extension-users').removeClass('sigma-hidden')
+            $('.extension-devs').addClass('sigma-hidden')
         });
         
-        // Create button
+        // Main widget.io button
         $('#editor-wrapper').append(button);
         $(button).click((event) => {
             event.stopPropagation();

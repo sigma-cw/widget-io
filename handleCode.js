@@ -46,6 +46,23 @@ function waitForElm(selector) {
     });
 }
 
+function waitForNewElm(getEl) {
+	return new Promise((resolve) => {
+		const found = getEl();
+		if (found) return resolve(found);
+
+		const observer = new MutationObserver(() => {
+			const el = getEl();
+			if (el) {
+				observer.disconnect();
+				resolve(el);
+			}
+		});
+
+		observer.observe(document.body, { childList: true, subtree: true });
+	});
+}
+
 function handleFile(file, type) {
     let fr = new FileReader();
     $(`.${type}-select span`).text(file.name);
@@ -205,187 +222,69 @@ function readFiles(zip, pathArray) {
         });
 }
 
-/* function handleCode(path) {
-    $('widget-creator > button').click();
-    tab = $('.widget-creator__items').children()[4];
-    tab_content = $(tab).children()[4];
-    widget_button = $(tab_content).children()[$(tab_content).children().length - 1];
-
-    $(widget_button).click();
-
-    $('.custom-event-list-editor-button-container > button').click();
-
-    waitForElm('.html-editor .CodeMirror').then(() => {
-        const htmlEditor = $('.html-editor .CodeMirror')[0].CodeMirror
-        if (path[0]) {
-            htmlEditor.setValue(path[0]);
-        } else {
-            htmlEditor.setValue('');
-        }
-
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[1]).children()[0]).click();
-    });
-
-    waitForElm('.css-editor .CodeMirror').then(() => {
-        const cssEditor = $('.css-editor .CodeMirror')[0].CodeMirror;
-        if (path[1]) {
-            cssEditor.setValue(path[1]);
-        } else {
-            cssEditor.setValue('');
-        }
-
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[2]).children()[0]).click();
-    });
-
-    waitForElm('.js-editor .CodeMirror').then(() => {
-        const jsEditor = $('.js-editor .CodeMirror')[0].CodeMirror;
-        if (path[2]) {
-            jsEditor.setValue(path[2]);
-        } else {
-            jsEditor.setValue('')
-        }
-
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[3]).children()[0]).click();
-    });
-
-    waitForElm('.fields-editor .CodeMirror').then(() => {
-        const fieldsEditor = $('.fields-editor .CodeMirror')[0].CodeMirror;
-        if (path[3]) {
-            fieldsEditor.setValue(path[3]);
-        } else {
-            fieldsEditor.setValue('')
-        }
-
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[4]).children()[0]).click();
-    });
-
-    waitForElm('.field-data-editor .CodeMirror').then(() => {
-        const dataEditor = $('.field-data-editor .CodeMirror')[0].CodeMirror;
-        if (path[4]) {
-            dataEditor.setValue(path[4]);
-        } else {
-            dataEditor.setValue('')
-        }
-
-        $('.exit-code-editor').click()
-    });
-}
-
-function writeCode() {
-    var zip = new JSZip()
-    zip.file('widget.ini', ini)
-    codeArray = [];
-
-    var value = $('#widgets')[0].value
-    var widgetList = $('span[ng-show="!vm.editableWidgetNames[widget.id]"]')
-    widgetList.each((el) => {
-        if (widgetList[el].innerText === value) {
-            $($(widgetList[el]).parent()[0]).click()
-        }
-    })
-
-    $('.custom-event-list-editor-button-container > button').click();
-
-    waitForElm('.html-editor .CodeMirror').then(() => {
-        const htmlEditor = $('.html-editor .CodeMirror')[0].CodeMirror
-        //codeArray.push(htmlEditor.getValue())
-        zip.file('html.txt', htmlEditor.getValue())
-
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[1]).children()[0]).click();
-    });
-
-    waitForElm('.css-editor .CodeMirror').then(() => {
-        const cssEditor = $('.css-editor .CodeMirror')[0].CodeMirror;
-        //codeArray.push(cssEditor.getValue())
-        zip.file('css.txt', cssEditor.getValue())
-
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[2]).children()[0]).click();
-    });
-
-    waitForElm('.js-editor .CodeMirror').then(() => {
-        const jsEditor = $('.js-editor .CodeMirror')[0].CodeMirror;
-        //codeArray.push(jsEditor.getValue())
-        zip.file('js.txt', jsEditor.getValue())
-
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[3]).children()[0]).click();
-    });
-
-    waitForElm('.fields-editor .CodeMirror').then(() => {
-        const fieldsEditor = $('.fields-editor .CodeMirror')[0].CodeMirror;
-        //codeArray.push(jsEditor.getValue())
-        zip.file('fields.txt', fieldsEditor.getValue())
-
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[4]).children()[0]).click();
-    });
-
-    waitForElm('.field-data-editor .CodeMirror').then(() => {
-        const dataEditor = $('.field-data-editor .CodeMirror')[0].CodeMirror;
-        //codeArray.push(fieldsEditor.getValue())
-        zip.file('data.txt', dataEditor.getValue())
-
-        $('.exit-code-editor').click();
-        zip.generateAsync({ type: "blob" }).then(function (blob) {
-            saveAs(blob, `${value}.zip`);
-        });
-    });
-
-
-}
- */
-
 function handleCode(path) {
-    $('widget-creator > button').click();
-    tab = $('.widget-creator__items').children()[4];
-    tab_content = $(tab).children()[4];
-    widget_button = $(tab_content).children()[$(tab_content).children().length - 1];
+	$('#overlay').click();
+	$('[data-base-ui-portal]').remove();
+    $('floating-actions > section > button').first().click();
+	const addWidgetButton = $('[data-editor-action="Open widget creator"]');
+	$(addWidgetButton).click();
 
-    $(widget_button).click();
+	const staticCustomPopup = 'div[data-slot="dropdown-menu-scroll-area"]'
+	waitForElm(staticCustomPopup).then(() => {
+		$(staticCustomPopup).children()[3].click();
+	})
 
-    $('.custom-event-list-editor-button-container > button').click();
+	const customWidgetButton = '[role="menuitem"][data-variant="default"]';
+	waitForElm(customWidgetButton).then(() => {
+		$(customWidgetButton).last()[0].click();
+	})
 
-    waitForElm('.html-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        model.setValue(path[0] || '');
+	const findOpenEditorButton = () =>
+	  [...document.querySelectorAll("se-editor-sidebar button")].find(
+		(b) => b.textContent.trim() === "Open Editor" // This is flaky asf cause different languages *may* have different text content for this button. I checked with a few and it seemed to be consistent, but who knows
+	  );
 
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[1]).children()[0]).click();
-    });
+	waitForNewElm(findOpenEditorButton).then((button) => button.click());
 
-    waitForElm('.css-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        model.setValue(path[1] || '');
+	waitForElm('[data-slot="tabs-list"]').then(() => {
+		const tabs = $('[data-slot="tabs-list"]').children();
 
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[2]).children()[0]).click();
-    });
+		waitForElm('[data-mode-id="html"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			model.setValue(path[0] || '');
 
-    waitForElm('.js-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        model.setValue(path[2] || '');
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[3]).children()[0]).click();
-    });
+			$(tabs[1]).click();
+		});
 
-    waitForElm('.fields-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        model.setValue(path[3] || '');
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[4]).children()[0]).click();
-    });
+		waitForElm('[data-mode-id="css"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			model.setValue(path[1] || '');
 
-    waitForElm('.field-data-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        model.setValue(path[4] || '');
-        $('.exit-code-editor').click()
-    });
+			$(tabs[2]).click();
+		});
+
+		waitForElm('[data-mode-id="javascript"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			model.setValue(path[2] || '');
+
+			$(tabs[3]).click();
+		});
+
+		waitForElm('[data-mode-id="json"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			model.setValue(path[3] || '');
+
+			$(tabs[4]).click();
+		});
+
+		waitForElm('[data-index="4"] [data-mode-id="json"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			model.setValue(path[4] || '');
+			console.log(model, path[4])
+
+			$('[data-slot="dialog-footer"] button').click()
+		});
+	})
 }
 function getDataUri(classes, index) {
     const parentElement = document.querySelector(classes);
@@ -420,57 +319,67 @@ function writeCode() {
     codeArray = [];
 
     var value = $('#widgets')[0].value
-    var widgetList = $('span[ng-show="!vm.editableWidgetNames[widget.id]"]')
+    var widgetList = $('li[data-editor-action="Select widget"]')
     widgetList.each((el) => {
         if (widgetList[el].innerText === value) {
-            $($(widgetList[el]).parent()[0]).click()
+            $(widgetList[el]).click()
         }
     })
 
-    $('.custom-event-list-editor-button-container > button').click();
+	const findSettingsButton = () =>
+		[...document.querySelectorAll('se-editor-sidebar div div[data-slot="collapsible"] button')].find(
+			(button) => button.textContent.trim() === "Settings" // This is flaky asf cause different languages *may* have different text content for this button. I checked with a few and it seemed to be consistent, but who knows
+		);
+	waitForNewElm(findSettingsButton).then((button) => button.click());
 
-    waitForElm('.html-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        zip.file('html.txt', model.getValue());
+	const findOpenEditorButton = () =>
+	  [...document.querySelectorAll("se-editor-sidebar button")].find(
+		(button) => button.textContent.trim() === "Open Editor" // This is flaky asf cause different languages *may* have different text content for this button. I checked with a few and it seemed to be consistent, but who knows
+	  );
+	waitForNewElm(findOpenEditorButton).then((button) => button.click());
 
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[1]).children()[0]).click();
-    });
+	waitForElm('[data-slot="tabs-list"]').then(() => {
+		const tabs = $('[data-slot="tabs-list"]').children();
 
-    waitForElm('.css-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        zip.file('css.txt', model.getValue());
+		waitForElm('[data-mode-id="html"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			zip.file('html.txt', model.getValue());
 
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[2]).children()[0]).click();
-    });
+			$(tabs[1]).click();
+		});
 
-    waitForElm('.js-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        zip.file('js.txt', model.getValue());
+		waitForElm('[data-mode-id="css"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			zip.file('css.txt', model.getValue());
 
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[3]).children()[0]).click();
-    });
+			$(tabs[2]).click();
+		});
 
-    waitForElm('.fields-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        zip.file('fields.txt', model.getValue());
+		waitForElm('[data-mode-id="javascript"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			zip.file('js.txt', model.getValue());
 
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[4]).children()[0]).click();
-    });
+			$(tabs[3]).click();
+		});
 
-    waitForElm('.field-data-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        zip.file('data.txt', model.getValue());
+		waitForElm('[data-mode-id="json"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			zip.file('fields.txt', model.getValue());
 
-        zip.generateAsync({ type: "blob" }).then(function (blob) {
-            saveAs(blob, `${value}.zip`);
-        });
-        console.log("zip", "downloaded");
-        $('.exit-code-editor').click();
-    });
+			$(tabs[4]).click();
+		});
+
+		waitForElm('[data-index="4"] [data-mode-id="json"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			zip.file('data.txt', model.getValue());
+
+			zip.generateAsync({ type: "blob" }).then(function (blob) {
+				saveAs(blob, `${value}.zip`);
+			});
+			console.log("zip", "downloaded");
+			$('[data-slot="dialog-footer"] button').click()
+		});
+	});
 }
 
 function resetSession() {
@@ -505,14 +414,6 @@ waitForElm('#zip').then(() => {
     });
 });
 
-waitForElm('#sigma-create').then(() => {
-    $('#sigma-create').click(() => {
-        $('#zip').val('')
-        $('.zip-select span').text('No file selected...')
-        handleCode(codePath)
-    });
-});
-
 waitForElm('#sigma-save').then(() => {
     $('#sigma-save').click(() => {
         writeCode()
@@ -526,7 +427,10 @@ waitForElm('#sigma-save').then(() => {
 window.addEventListener("message", function (event) {
 
     if (event.data[1] === 'zip') {
-        codePath = event.data[0];
+		codePath = event.data[0];
+		$('#zip').val('')
+		$('.zip-select span').text('No file selected...')
+		handleCode(codePath)
     }
     else if (event.data[1] === 'html') {
         codePath[0] = event.data[0];
@@ -553,7 +457,7 @@ window.addEventListener("message", function (event) {
 const dialog = `
 <div class="sigma-extension-dialog">
     <div class="md-dialog-container sigma-dialog-container" tabindex="-1" md-theme="default"
-        style="top: 0px; height: 961px;">
+        style="top: 0px; height: 1012px;">
         <div class="md-dialog-focus-trap" tabindex="0"></div>
         <md-dialog class="sigma-dialog overlay-editor__session-data-dialog__root _md md-default-theme md-transition-in"
             md-theme="default" role="dialog" tabindex="-1" aria-describedby="dialogContent_111" style="">
@@ -562,10 +466,11 @@ const dialog = `
                 <p>
                     Unfortunately, the ZIP you uploaded is not supported by this
                     extension. Do not fret, however! You can manually provide
-                    the required files. Open the ZIP and locate files with names
-                    that either contain or otherwise resemble <a>"html.txt"</a>, <a>"css.txt"</a>,
-                    <a>"js.txt"</a>, and <a>"fields.txt"</a>. Refer to the instructions that
-                    came with your widget to find these files or their equivalents.
+                    the required files. Open the file you just uploaded using 7-Zip or a similar program,
+					and drag out its contents to a folder on your computer.
+					What you extracted should contain or otherwise resemble <a>"html.txt"</a>, <a>"css.txt"</a>,
+                    <a>"js.txt"</a>, <a>"fields.txt"</a>, and <a>"data.txt"</a>
+					(exact naming may vary for each widget, but the files should be named somewhat like that).
                  </p>
                  <p>
                     Then, select each file in the respective box below, and click
