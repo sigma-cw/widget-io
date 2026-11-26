@@ -46,6 +46,23 @@ function waitForElm(selector) {
     });
 }
 
+function waitForNewElm(getEl) {
+	return new Promise((resolve) => {
+		const found = getEl();
+		if (found) return resolve(found);
+
+		const observer = new MutationObserver(() => {
+			const el = getEl();
+			if (el) {
+				observer.disconnect();
+				resolve(el);
+			}
+		});
+
+		observer.observe(document.body, { childList: true, subtree: true });
+	});
+}
+
 function handleFile(file, type) {
     let fr = new FileReader();
     $(`.${type}-select span`).text(file.name);
@@ -342,50 +359,65 @@ function writeCode() {
  */
 
 function handleCode(path) {
-    $('widget-creator > button').click();
-    tab = $('.widget-creator__items').children()[4];
-    tab_content = $(tab).children()[4];
-    widget_button = $(tab_content).children()[$(tab_content).children().length - 1];
+    $('floating-actions > section > button').first().click();
+	const addWidgetButton = $('[data-editor-action="Open widget creator"]');
+	$(addWidgetButton).click();
 
-    $(widget_button).click();
+	const staticCustomPopup = 'div[data-slot="dropdown-menu-scroll-area"]'
+	waitForElm(staticCustomPopup).then(() => {
+		$(staticCustomPopup).children()[3].click();
+	})
 
-    $('.custom-event-list-editor-button-container > button').click();
+	const customWidgetButton = '[role="menuitem"][data-variant="default"]';
+	waitForElm(customWidgetButton).then(() => {
+		$(customWidgetButton).last()[0].click();
+	})
 
-    waitForElm('.html-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        model.setValue(path[0] || '');
+	const findOpenEditorBtn = () =>
+	  [...document.querySelectorAll("se-editor-sidebar button")].find(
+		(b) => b.textContent.trim() === "Open Editor" // This is flaky asf cause different languages *may* have different text content for this button. I checked with a few and it seemed to be consistent, but who knows
+	  );
 
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[1]).children()[0]).click();
-    });
+	waitForNewElm(findOpenEditorBtn).then((button) => button.click());
 
-    waitForElm('.css-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        model.setValue(path[1] || '');
+	waitForElm('[data-slot="tabs-list"]').then(() => {
+		const tabs = $('[data-slot="tabs-list"]').children();
 
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[2]).children()[0]).click();
-    });
+		waitForElm('[data-mode-id="html"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			model.setValue(path[0] || '');
 
-    waitForElm('.js-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        model.setValue(path[2] || '');
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[3]).children()[0]).click();
-    });
+			$(tabs[1]).click();
+		});
 
-    waitForElm('.fields-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        model.setValue(path[3] || '');
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[4]).children()[0]).click();
-    });
+		waitForElm('[data-mode-id="css"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			model.setValue(path[1] || '');
 
-    waitForElm('.field-data-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        model.setValue(path[4] || '');
-        $('.exit-code-editor').click()
-    });
+			$(tabs[2]).click();
+		});
+
+		waitForElm('[data-mode-id="javascript"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			model.setValue(path[2] || '');
+
+			$(tabs[3]).click();
+		});
+
+		waitForElm('[data-mode-id="json"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			model.setValue(path[3] || '');
+
+			$(tabs[4]).click();
+		});
+
+		waitForElm('[data-mode-id="json"][data-keybinding-context="5"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+
+			model.setValue(path[4] || '');
+			$('[data-slot="dialog-footer"] button').click()
+		});
+	})
 }
 function getDataUri(classes, index) {
     const parentElement = document.querySelector(classes);
