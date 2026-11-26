@@ -359,6 +359,8 @@ function writeCode() {
  */
 
 function handleCode(path) {
+	$('#overlay').click();
+	$('[data-base-ui-portal]').remove();
     $('floating-actions > section > button').first().click();
 	const addWidgetButton = $('[data-editor-action="Open widget creator"]');
 	$(addWidgetButton).click();
@@ -373,12 +375,12 @@ function handleCode(path) {
 		$(customWidgetButton).last()[0].click();
 	})
 
-	const findOpenEditorBtn = () =>
+	const findOpenEditorButton = () =>
 	  [...document.querySelectorAll("se-editor-sidebar button")].find(
 		(b) => b.textContent.trim() === "Open Editor" // This is flaky asf cause different languages *may* have different text content for this button. I checked with a few and it seemed to be consistent, but who knows
 	  );
 
-	waitForNewElm(findOpenEditorBtn).then((button) => button.click());
+	waitForNewElm(findOpenEditorButton).then((button) => button.click());
 
 	waitForElm('[data-slot="tabs-list"]').then(() => {
 		const tabs = $('[data-slot="tabs-list"]').children();
@@ -411,10 +413,11 @@ function handleCode(path) {
 			$(tabs[4]).click();
 		});
 
-		waitForElm('[data-mode-id="json"][data-keybinding-context="5"] .monaco-editor').then(() => {
+		waitForElm('[data-index="4"] [data-mode-id="json"] .monaco-editor').then(() => {
 			const model = monaco.editor.getModels().slice(-1)[0];
-
 			model.setValue(path[4] || '');
+			console.log(model, path[4])
+
 			$('[data-slot="dialog-footer"] button').click()
 		});
 	})
@@ -452,57 +455,67 @@ function writeCode() {
     codeArray = [];
 
     var value = $('#widgets')[0].value
-    var widgetList = $('span[ng-show="!vm.editableWidgetNames[widget.id]"]')
+    var widgetList = $('li[data-editor-action="Select widget"]')
     widgetList.each((el) => {
         if (widgetList[el].innerText === value) {
-            $($(widgetList[el]).parent()[0]).click()
+            $(widgetList[el]).click()
         }
     })
 
-    $('.custom-event-list-editor-button-container > button').click();
+	const findSettingsButton = () =>
+		[...document.querySelectorAll('se-editor-sidebar div div[data-slot="collapsible"] button')].find(
+			(button) => button.textContent.trim() === "Settings" // This is flaky asf cause different languages *may* have different text content for this button. I checked with a few and it seemed to be consistent, but who knows
+		);
+	waitForNewElm(findSettingsButton).then((button) => button.click());
 
-    waitForElm('.html-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        zip.file('html.txt', model.getValue());
+	const findOpenEditorButton = () =>
+	  [...document.querySelectorAll("se-editor-sidebar button")].find(
+		(button) => button.textContent.trim() === "Open Editor" // This is flaky asf cause different languages *may* have different text content for this button. I checked with a few and it seemed to be consistent, but who knows
+	  );
+	waitForNewElm(findOpenEditorButton).then((button) => button.click());
 
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[1]).children()[0]).click();
-    });
+	waitForElm('[data-slot="tabs-list"]').then(() => {
+		const tabs = $('[data-slot="tabs-list"]').children();
 
-    waitForElm('.css-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        zip.file('css.txt', model.getValue());
+		waitForElm('[data-mode-id="html"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			zip.file('html.txt', model.getValue());
 
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[2]).children()[0]).click();
-    });
+			$(tabs[1]).click();
+		});
 
-    waitForElm('.js-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        zip.file('js.txt', model.getValue());
+		waitForElm('[data-mode-id="css"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			zip.file('css.txt', model.getValue());
 
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[3]).children()[0]).click();
-    });
+			$(tabs[2]).click();
+		});
 
-    waitForElm('.fields-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        zip.file('fields.txt', model.getValue());
+		waitForElm('[data-mode-id="javascript"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			zip.file('js.txt', model.getValue());
 
-        const fields = $('._md-nav-bar-list').children();
-        $($(fields[4]).children()[0]).click();
-    });
+			$(tabs[3]).click();
+		});
 
-    waitForElm('.field-data-editor.code-editor .monaco-editor').then(() => {
-        const model = monaco.editor.getModels().slice(-1)[0];
-        zip.file('data.txt', model.getValue());
+		waitForElm('[data-mode-id="json"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			zip.file('fields.txt', model.getValue());
 
-        zip.generateAsync({ type: "blob" }).then(function (blob) {
-            saveAs(blob, `${value}.zip`);
-        });
-        console.log("zip", "downloaded");
-        $('.exit-code-editor').click();
-    });
+			$(tabs[4]).click();
+		});
+
+		waitForElm('[data-index="4"] [data-mode-id="json"] .monaco-editor').then(() => {
+			const model = monaco.editor.getModels().slice(-1)[0];
+			zip.file('data.txt', model.getValue());
+
+			zip.generateAsync({ type: "blob" }).then(function (blob) {
+				saveAs(blob, `${value}.zip`);
+			});
+			console.log("zip", "downloaded");
+			$('[data-slot="dialog-footer"] button').click()
+		});
+	});
 }
 
 function resetSession() {
