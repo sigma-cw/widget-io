@@ -62,7 +62,7 @@ var style = $(`
         .extension-button {
             position: fixed;
             bottom: 20px;
-            left: 400px;
+            left: 310px;
         }
 
         .extension-button.md-fab {
@@ -81,7 +81,7 @@ var style = $(`
             width: 300px;
             position: fixed;
             bottom: 90px;
-            left: 400px;
+            left: 310px;
             margin: 12px 8px;
             grid-row-gap: 8px;
             display: inline-grid;
