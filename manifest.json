@@ -1,6 +1,6 @@
 {
 	"name": "widget.io",
-	"version": "1.2",
+	"version": "1.3",
 	"description": "A simple Streamelements addon to automate and simplify widget import and export.",
 	"manifest_version": 3,
 	"author": "Sigma",
