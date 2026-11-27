@@ -40,5 +40,13 @@
 				"https://streamelements.com/*"
 			]
 		}
-	]
+	],
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "widgetio@mccw.studio",
+			"data_collection_permissions": {
+				"required": ["none"]
+			}
+		}
+	}
 }
