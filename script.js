@@ -35,10 +35,8 @@ function waitForElm(selector) {
 function handleWidgetList() {
     $('#widgets').html('')
 	const sidebarChildren = $('se-editor-sidebar > div').children();
-	console.log(sidebarChildren.length, sidebarChildren[0].dataset, "closed", sidebarChildren[0].dataset['closed'] === '')
 	if( sidebarChildren.length > 1 && sidebarChildren[0].dataset['closed'] === ''){
 		$('se-editor-sidebar div[data-slot="collapsible"][data-closed]:first-of-type > button').click();
-		console.log($('se-editor-sidebar div[data-slot="collapsible"][data-closed]:first-of-type'))
 	}
 	waitForElm('li[data-editor-action="Select widget"]').then(() => {
 		$('li[data-editor-action="Select widget"]').each((el) => {

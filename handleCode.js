@@ -95,33 +95,78 @@ function handleZip(file) {
     zip.loadAsync(file)
         .then(function (zip) {
             $('.zip-select span').text(file.name)
-            if (!zip.files[`widget.ini`]) {
-                handleUnsupported(zip)
-                return
-            }
-            zip.files[`widget.ini`].async('string')
-                .then((data) => {
-                    pathArray = handleIniData(data);
-                    if (pathArray.length != 5) {
-                        handleUnsupported(zip)
-                        return
-                    }
-
-                    if (!zip.files[`${pathArray[0]}`] ||
-                        !zip.files[`${pathArray[1]}`] ||
-                        !zip.files[`${pathArray[2]}`] ||
-                        !zip.files[`${pathArray[3]}`] ||
-                        !zip.files[`${pathArray[4]}`]) {
-                        alert('This widget was not set up properly. Opening manual upload dialog...')
-                        handleUnsupported(zip)
-                        return
-                    }
-                    readFiles(zip, pathArray);
-                })
+			const matchedByFilename = assignByFilename(zip);
+			if(matchedByFilename) return;
+			const matchedByContents = assignByContents(zip);
+			// assignByContents redirects to assignManually if it fails
+			if(matchedByContents) return;
         });
 }
 
-function handleUnsupported(zip) {
+function assignByFilename(zip) {
+	const found = {};
+
+	for (const [file, entry] of Object.entries(zip.files)) {
+		if (entry.dir) continue;
+		const type = getType(file);
+		if (type) found[type] = entry;
+	}
+
+	if (filesArray.some((slot) => !found[slot])) return false;
+	const orderedArray = [found.html, found.css, found.js, found.fields, found.data]
+	convertFilesToStrings(orderedArray).then(strings => window.postMessage([strings, 'zip']));
+	return true;
+}
+
+function assignByContents(zip){
+	const found = {};
+	return convertFilesToStrings(Object.values(zip.files)).then(strings => {
+		for (const entry of strings) {
+			if (entry.dir) continue;
+			const type = getContentType(entry);
+			if (type) found[type] = entry;
+		}
+
+		if (filesArray.some((slot) => !found[slot])){
+			assignManually(zip);
+			return
+		};
+		const orderedArray = [found.html, found.css, found.js, found.fields, found.data]
+		window.postMessage([orderedArray, 'zip']);
+		return true;
+	})
+}
+
+function getContentType(file){
+	const fileContent = file.trim();
+	if (!fileContent) return null;
+
+	// json (fields or data)
+	try {
+		const obj = JSON.parse(fileContent);
+		if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+			const vals = Object.values(obj);
+			const allPrimitive = vals.every((v) => v === null || typeof v !== "object");
+			return allPrimitive ? "data" : "fields"; // {} counts as data
+		}
+	} catch {}
+
+	// html
+	if (/^(\s*<!--[\s\S]*?-->)*\s*<[a-z!]/i.test(fileContent)) return "html";
+
+	// js
+	if (
+		/\b(function|const|let|return)\b|=>|\b(document|window)\.|addEventListener|^\s*class\s+\w+/m.test(fileContent)
+	)
+		return "js";
+
+	//css
+	if (/[^{}]+\{[^{}]*:[^{}]*\}/.test(fileContent) || /^\s*@/m.test(fileContent)) return "css";
+
+	return null;
+}
+
+function assignManually(zip) {
     // alert("This widget is not supported.")
     resetSession()
 
@@ -160,66 +205,6 @@ function handleUnsupported(zip) {
     $('.sigma-dialog').click((event) => {
         event.stopPropagation();
     })
-}
-
-function handleIniData(data) {
-    var lines = data.split('\n');
-    var pathArray = [];
-    for (var i = 0; i < lines.length; i++) {
-        if (lines[i].includes('[HTML]')) {
-            var _temp = lines[i + 1].split('"');
-            pathArray.push(_temp[1]);
-        }
-
-        if (lines[i].includes('[CSS]')) {
-            var _temp = lines[i + 1].split('"');
-            pathArray.push(_temp[1]);
-        }
-
-        if (lines[i].includes('[JS]')) {
-            var _temp = lines[i + 1].split('"');
-            pathArray.push(_temp[1]);
-        }
-
-        if (lines[i].includes('[FIELDS]')) {
-            var _temp = lines[i + 1].split('"');
-            pathArray.push(_temp[1]);
-        }
-
-        if (lines[i].includes('[DATA]')) {
-            var _temp = lines[i + 1].split('"');
-            pathArray.push(_temp[1]);
-        }
-    }
-
-    return pathArray;
-}
-
-function readFiles(zip, pathArray) {
-    var htmlCode, cssCode, jsCode, fieldsCode, dataCode;
-    zip.files[`${pathArray[0]}`].async('string')
-        .then((data) => {
-            htmlCode = data;
-            zip.files[`${pathArray[1]}`].async('string')
-                .then((data) => {
-                    cssCode = data;
-                    zip.files[`${pathArray[2]}`].async('string')
-                        .then((data) => {
-                            jsCode = data;
-                            zip.files[`${pathArray[3]}`].async('string')
-                                .then((data) => {
-                                    fieldsCode = data;
-                                    zip.files[`${pathArray[4]}`].async('string')
-                                        .then((data) => {
-                                            dataCode = data;
-                                            code = [htmlCode, cssCode, jsCode, fieldsCode, dataCode]
-                                            window.postMessage([code, 'zip'])
-                                            return
-                                        });
-                                });
-                        });
-                });
-        });
 }
 
 function handleCode(path) {
@@ -280,42 +265,18 @@ function handleCode(path) {
 		waitForElm('[data-index="4"] [data-mode-id="json"] .monaco-editor').then(() => {
 			const model = monaco.editor.getModels().slice(-1)[0];
 			model.setValue(path[4] || '');
-			console.log(model, path[4])
 
 			$('[data-slot="dialog-footer"] button').click()
 		});
 	})
 }
-function getDataUri(classes, index) {
-    const parentElement = document.querySelector(classes);
-    if (parentElement) {
-        const targetElement = parentElement.querySelector(`${classes} .monaco-editor`);
-
-        if (targetElement) {
-            const dataUri = targetElement.getAttribute('data-uri');
-            const parts = dataUri.split("model/");
-            return parts.length > 1 ? parts[1] : null;
-        }
-        else {
-            const fields = $('._md-nav-bar-list').children();
-            $($(fields[index]).children()[0]).click();
-            const targetElement = parentElement.querySelector(`${classes} .monaco-editor`);
-
-            if (targetElement) {
-                const dataUri = targetElement.getAttribute('data-uri');
-                const parts = dataUri.split("model/");
-                return parts.length > 1 ? parts[1] : null;
-            }
-        }
-    } else {
-        console.log(`Element ${classes} not found`)
-    }
-    return null;
-}
 
 function writeCode() {
     var zip = new JSZip()
+
+	// leaving this here as a homeage to what once was (aka in case it has to be brought back, so the widgets exported without ini import will work afterwards)
     zip.file('widget.ini', ini)
+
     codeArray = [];
 
     var value = $('#widgets')[0].value
@@ -380,6 +341,21 @@ function writeCode() {
 			$('[data-slot="dialog-footer"] button').click()
 		});
 	});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//									UTIL	                                  //
+////////////////////////////////////////////////////////////////////////////////
+
+function getType(filename) {
+	const [name, ext] = filename.toLowerCase().split(".");
+	if (["html", "css", "js"].includes(ext)) return ext;
+	if (filesArray.includes(name)) return name;
+	return null;
+}
+
+function convertFilesToStrings(files){
+	return Promise.all(files.map((file) => file.async("string")))
 }
 
 function resetSession() {
@@ -457,20 +433,20 @@ window.addEventListener("message", function (event) {
 const dialog = `
 <div class="sigma-extension-dialog">
     <div class="md-dialog-container sigma-dialog-container" tabindex="-1" md-theme="default"
-        style="top: 0px; height: 1012px;">
+        style="top: 0px; height: 1013px;">
         <div class="md-dialog-focus-trap" tabindex="0"></div>
         <md-dialog class="sigma-dialog overlay-editor__session-data-dialog__root _md md-default-theme md-transition-in"
             md-theme="default" role="dialog" tabindex="-1" aria-describedby="dialogContent_111" style="">
             <div class="title-area">
                 <h3>Manual upload</h3>
                 <p>
-                    Unfortunately, the ZIP you uploaded is not supported by this
+                    The ZIP you uploaded could not be automatically processed by the
                     extension. Do not fret, however! You can manually provide
                     the required files. Open the file you just uploaded using 7-Zip or a similar program,
 					and drag out its contents to a folder on your computer.
 					What you extracted should contain or otherwise resemble <a>"html.txt"</a>, <a>"css.txt"</a>,
                     <a>"js.txt"</a>, <a>"fields.txt"</a>, and <a>"data.txt"</a>
-					(exact naming may vary for each widget, but the files should be named somewhat like that).
+					(exact naming may vary for each widget, but the files could be named somewhat like that).
                  </p>
                  <p>
                     Then, select each file in the respective box below, and click
